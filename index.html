@@ -1,0 +1,267 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Desafio da Revisão</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: palco de projeção — placar fixo no topo, pergunta à esquerda, alternativas à direita */
+:root{
+  --bg:#F2F4FA; --surface:#FFFFFF; --ink:#14213D; --muted:#56627F; --line:#D3D9E8;
+  --accent:#9C2B2B; --accent-ink:#FFFFFF; --gold:#B9801A;
+  --ok:#17744A; --ok-bg:#DCF2E6; --bad:#B3261E; --bad-bg:#FBE2DF; --sel-bg:#E2E8F8; --sel-line:#2E5A9E;
+  --t0:#E4572E; --t1:#2E86DE; --t2:#8E44AD; --t3:#1E9E6A; --t4:#D4A017; --t5:#D6457F;
+  --display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif; --text:'Inter','Segoe UI',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C1530; --surface:#162244; --ink:#EDF0FA; --muted:#9DAAC9; --line:#2B3B68;
+  --accent:#E3787D; --accent-ink:#0C1530; --gold:#E3B450;
+  --ok:#62D69E; --ok-bg:#12392B; --bad:#FF8F87; --bad-bg:#47201F; --sel-bg:#23366B; --sel-line:#7FA6F0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1530; --surface:#162244; --ink:#EDF0FA; --muted:#9DAAC9; --line:#2B3B68;
+  --accent:#E3787D; --accent-ink:#0C1530; --gold:#E3B450;
+  --ok:#62D69E; --ok-bg:#12392B; --bad:#FF8F87; --bad-bg:#47201F; --sel-bg:#23366B; --sel-line:#7FA6F0; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--text);font-size:clamp(15px,1.25vw,30px);line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:1rem 1.5rem}
+*{box-sizing:border-box}
+.app{max-width:1600px;margin:0 auto;display:flex;flex-direction:column;gap:1rem;min-height:calc(100vh - 3rem)}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.1}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--sel-line);outline-offset:2px}
+.eyebrow{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+/* top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;gap:.15rem}
+.brand b{font-family:var(--display);font-weight:800;font-size:1.25rem;letter-spacing:-.01em}
+.score{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:flex-end}
+.team{display:flex;align-items:center;gap:.6rem;padding:.4rem .8rem;border-radius:.7rem;background:var(--surface);border:2px solid var(--line);min-width:0}
+.team i{width:.85rem;height:.85rem;border-radius:50%;flex:none}
+.team span{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:11ch}
+.team b{font-family:var(--display);font-size:1.3rem;font-variant-numeric:tabular-nums}
+.team.on{border-color:var(--ink);box-shadow:0 0 0 3px var(--sel-line)}
+.team.bump b{animation:bump .6s}
+@keyframes bump{40%{transform:scale(1.35)}}
+/* setup */
+.setup{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:2rem;align-items:start;margin-block:auto}
+.hero h1{font-size:clamp(2.4rem,6vw,5.2rem);font-weight:800;letter-spacing:-.03em}
+.hero p{max-width:34ch;color:var(--muted);font-size:1.1rem;margin:.8rem 0 0}
+.panel{background:var(--surface);border:2px solid var(--line);border-radius:1rem;padding:1.3rem;display:flex;flex-direction:column;gap:1.1rem}
+.row{display:flex;flex-direction:column;gap:.45rem}
+.chips{display:flex;gap:.4rem;flex-wrap:wrap}
+.chip{padding:.45rem .9rem;border-radius:.6rem;border:2px solid var(--line);background:var(--bg);font-weight:600;min-width:2.6rem}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.names{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.5rem}
+.names label{display:flex;align-items:center;gap:.5rem;border:2px solid var(--line);border-radius:.6rem;padding:.25rem .6rem;background:var(--bg)}
+.names i{width:.8rem;height:.8rem;border-radius:50%;flex:none}
+.names input{border:0;background:transparent;color:var(--ink);font:inherit;width:100%;min-width:0;padding:.3rem 0}
+.sw{display:flex;align-items:center;gap:.6rem}
+.sw input{width:1.2rem;height:1.2rem;accent-color:var(--accent)}
+.go{background:var(--accent);color:var(--accent-ink);border:0;border-radius:.8rem;padding:.9rem 1.4rem;font-family:var(--display);font-weight:700;font-size:1.25rem}
+.go:hover{filter:brightness(1.08)}
+.ghost{background:transparent;border:2px solid var(--line);border-radius:.7rem;padding:.5rem 1rem;font-weight:600}
+.ghost:hover{border-color:var(--ink)}
+/* round */
+.meta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.turn{display:flex;align-items:center;gap:.6rem;font-family:var(--display);font-weight:700;font-size:1.5rem}
+.turn i{width:1.1rem;height:1.1rem;border-radius:50%}
+.tag{padding:.25rem .7rem;border-radius:99px;background:var(--sel-bg);font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.tag.steal{background:var(--gold);color:var(--bg)}
+.timer{margin-left:auto;display:flex;align-items:center;gap:.8rem;min-width:min(22rem,100%);flex:1 1 14rem;max-width:26rem}
+.timer b{font-family:var(--display);font-size:1.7rem;font-variant-numeric:tabular-nums;min-width:3.2ch;text-align:right}
+.track{flex:1;height:.9rem;background:var(--line);border-radius:99px;overflow:hidden}
+.fill{height:100%;background:var(--sel-line);border-radius:99px;transition:width 1s linear,background .3s}
+.fill.low{background:var(--bad)}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.2rem;align-items:start}
+.card{background:var(--surface);border:2px solid var(--line);border-radius:1rem;padding:1.4rem 1.6rem}
+.card .src{font-size:.7rem;color:var(--muted);margin:.7rem 0 0;font-style:italic}
+.base{font-size:1.3rem;line-height:1.5;margin:.5rem 0 1.1rem}
+.cmd{font-family:var(--display);font-weight:700;font-size:1.5rem;line-height:1.25;margin:0}
+.alts{display:flex;flex-direction:column;gap:.6rem}
+.alt{display:grid;grid-template-columns:2.4rem minmax(0,1fr);gap:.9rem;align-items:start;text-align:left;
+  background:var(--surface);border:2px solid var(--line);border-radius:.9rem;padding:.8rem 1rem;font-size:1.12rem;line-height:1.35}
+.alt .L{font-family:var(--display);font-weight:800;font-size:1.4rem;width:2.4rem;height:2.4rem;border-radius:.6rem;background:var(--bg);display:grid;place-items:center}
+.alt:hover:not(:disabled){border-color:var(--sel-line)}
+.alt.sel{background:var(--sel-bg);border-color:var(--sel-line)}
+.alt.sel .L{background:var(--sel-line);color:var(--bg)}
+.alt.out{opacity:.35;text-decoration:line-through}
+.alt.right{background:var(--ok-bg);border-color:var(--ok)}
+.alt.right .L{background:var(--ok);color:var(--bg)}
+.alt.wrong{background:var(--bad-bg);border-color:var(--bad)}
+.alt.wrong .L{background:var(--bad);color:var(--bg)}
+.alt:disabled{cursor:default}
+.actions{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin-top:.3rem}
+.hint{color:var(--muted);font-size:.8rem}
+.verdict{border-radius:1rem;padding:1rem 1.3rem;border:2px solid var(--line);background:var(--surface)}
+.verdict.ok{border-color:var(--ok);background:var(--ok-bg)}
+.verdict.no{border-color:var(--bad);background:var(--bad-bg)}
+.verdict h3{font-size:1.6rem;margin-bottom:.4rem}
+.verdict p{margin:0;font-size:1.05rem}
+.notice{border:2px dashed var(--gold);border-radius:.8rem;padding:.6rem 1rem;font-weight:600}
+/* final */
+.final{display:flex;flex-direction:column;gap:1.4rem;margin-block:auto}
+.final h1{font-size:clamp(2.2rem,5vw,4.4rem);font-weight:800}
+.rank{display:flex;flex-direction:column;gap:.6rem;max-width:46rem}
+.rk{display:grid;grid-template-columns:3rem minmax(0,1fr) auto;align-items:center;gap:1rem;background:var(--surface);border:2px solid var(--line);border-radius:.9rem;padding:.7rem 1.1rem}
+.rk .n{font-family:var(--display);font-weight:800;font-size:1.9rem;color:var(--muted)}
+.rk.first{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold)}
+.rk.first .n{color:var(--gold)}
+.rk .nm{display:flex;gap:.6rem;align-items:center;font-weight:600;font-size:1.3rem;min-width:0}
+.rk .nm i{width:1rem;height:1rem;border-radius:50%;flex:none}
+.rk .pt{font-family:var(--display);font-weight:800;font-size:2rem;font-variant-numeric:tabular-nums}
+.foot{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:var(--muted);font-size:.78rem;margin-top:auto}
+@media (max-width:900px){.setup,.stage{grid-template-columns:1fr}.names{grid-template-columns:1fr}.timer{margin-left:0;max-width:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<div class="app" id="app"></div>
+<script>
+const Q = [{"tema": "Teoria crítica", "t": "Um laboratório descobre um medicamento eficaz contra uma doença tropical, mas decide não produzi-lo em larga escala porque os pacientes, na maioria pobres, não dariam lucro. A diretoria afirma que a decisão é “puramente técnica e neutra”.", "c": "Do ponto de vista da teoria crítica da Escola de Frankfurt, a alegação da diretoria é problemática porque:", "a": ["a pesquisa científica deve se limitar a descrever os fatos, sem considerar seus usos.", "a ciência e a técnica não são neutras: servem a interesses que orientam o que se produz.", "o conhecimento científico só é legítimo quando gera lucro para quem o financia.", "a ciência moderna é inimiga da vida humana e deve ser abandonada.", "o lucro é neutro e dispensa qualquer julgamento ético sobre o conhecimento."], "k": 1, "e": "Para os frankfurtianos, a ciência e a técnica, nas mãos do capital, servem à manutenção da dominação e não são neutras. A, C, D e E atribuem à teoria crítica teses que ela não sustenta."}, {"tema": "Razão instrumental", "t": "Em uma empresa, um sistema de pontuação decide quem recebe empréstimos. Ninguém sabe explicar seus critérios, mas todos obedecem aos resultados como se fossem verdades indiscutíveis.", "c": "Para Adorno e Horkheimer, o esclarecimento, que prometia libertar os humanos do mito, regride à mitologia quando:", "a": ["a ciência abandona a técnica e volta às crenças religiosas tradicionais.", "o conhecimento é amplamente divulgado e discutido pela população.", "os mitos passam a ser estudados criticamente pelas ciências humanas.", "a razão vira cálculo e domínio, e seus resultados são aceitos sem crítica.", "a natureza deixa de ser explicada, e os humanos passam a temê-la."], "k": 3, "e": "Na Dialética do esclarecimento, a razão instrumental, reduzida ao cálculo, torna-se um novo mito: obedece-se a seus resultados sem questioná-los, como o sistema de pontuação do enunciado. As demais não correspondem à tese."}, {"tema": "Indústria cultural", "t": "Há duas leituras da indústria cultural. Para uns, ela democratiza a cultura, pois leva músicas, filmes e séries a milhões de pessoas. Para outros, esse acesso amplo esconde um problema.", "c": "A objeção de Adorno e Horkheimer à tese da democratização é que a ampla circulação de bens culturais:", "a": ["impede que as pessoas consumam qualquer produto cultural.", "reduz o interesse do público pelo entretenimento comercial.", "oferece produtos padronizados que adaptam o público ao sistema, e não o emancipam.", "garante a formação crítica de todos os consumidores de cultura.", "aumenta o preço da cultura e a torna inacessível à maioria."], "k": 2, "e": "Para os autores, acesso não é emancipação: a produção em série e padronizada conforma o público à ordem existente. É a interpretação oposta à que vê a indústria cultural como instrumento de democratização."}, {"tema": "Benjamin", "t": "Em uma rede social, anúncios, notícias e opiniões surgem em sequência rápida, na mesma tela e com o mesmo formato. O usuário rola o dedo sem tempo de distinguir uma coisa da outra.", "c": "Segundo Walter Benjamin, a propaganda dificulta a análise crítica porque:", "a": ["o conteúdo das imagens é sempre falso e ilusório.", "a tecnologia evolui tão rápido que ninguém consegue compreendê-la.", "as notícias duram pouco e logo são esquecidas pelo público.", "a opinião pública se emancipa e deixa de querer informação.", "a proximidade e o ritmo das imagens eliminam a distância necessária à reflexão."], "k": 4, "e": "Em Rua de mão única, Benjamin descreve a propaganda como algo que traz as coisas para “primeiro plano”, com ritmo de filme, e assim suprime a distância e o tempo que a crítica exige. O caso da rede social ilustra isso."}, {"tema": "Benjamin", "t": "Em um grande comício, luzes, drones, hinos e coreografias emocionam a multidão. O candidato quase não apresenta propostas, e nada se diz sobre mudar a distribuição da riqueza no país.", "c": "Para Benjamin, a estetização da política, que ele associa ao fascismo, consiste em:", "a": ["dar às massas uma forma de expressão, preservando as relações de propriedade.", "eliminar a arte da vida pública para impedir qualquer espetáculo político.", "devolver o poder às massas, que passam a controlar a propriedade.", "politizar a arte, tornando-a instrumento de crítica das elites.", "substituir a técnica de reprodução por obras únicas e autênticas."], "k": 0, "e": "Em A obra de arte na era de sua reprodutibilidade técnica, Benjamin afirma que o fascismo dá às massas expressão (espetáculo), mas conserva as relações de propriedade: é a estetização da política. A alternativa D descreve o oposto, a politização da arte."}, {"tema": "Marcuse", "t": "Uma jovem lista o que considera indispensável: alimentar-se, ter moradia, usar a roupa da campanha da temporada e ficar online o tempo todo para não “ficar de fora”.", "c": "Para Herbert Marcuse, as duas últimas necessidades da lista são falsas necessidades porque:", "a": ["satisfazem apenas desejos espirituais, sem relação com a sociedade.", "são impostas por forças externas e vividas como se fossem escolhas próprias.", "nascem da solidariedade entre as classes trabalhadoras.", "expressam a ampliação da liberdade política do consumidor.", "resultam do controle médico-científico sobre os corpos."], "k": 1, "e": "Em O homem unidimensional, Marcuse define falsas necessidades como aquelas cujo conteúdo e função são determinados por forças externas, sobre as quais o indivíduo não tem controle. Alimentação e moradia são necessidades vitais."}, {"tema": "Marcuse", "t": "Uma editora lança poemas “reescritos” em linguagem de bate-papo e com final feliz, para vender mais. Sumiram as ambiguidades e os versos que incomodavam o leitor.", "c": "Do ponto de vista de Marcuse, a mudança compromete o potencial político dos poemas porque:", "a": ["torna a linguagem artística inacessível à maioria do público.", "exige do leitor um esforço de interpretação que ele não tem.", "reforça o conteúdo militante, que é o que importa na arte.", "abdica da forma estética, que dá à obra autonomia para negar a realidade.", "aumenta o preço do livro e restringe o acesso do público."], "k": 3, "e": "Em A dimensão estética, Marcuse sustenta que a renúncia à forma estética é abdicação da responsabilidade: só como obra autônoma a arte tem relevância política. O conteúdo militante (C) é justamente a posição criticada por ele."}, {"tema": "Habermas", "t": "Uma escola precisa definir regras para o uso do celular. A direção quer decidir sozinha, mas um grupo propõe reunir estudantes, professores e famílias para discutir e só então estabelecer a regra.", "c": "Segundo Habermas, uma norma só é legítima quando:", "a": ["é definida por quem tem mais conhecimento técnico sobre o assunto.", "é aprovada pelo poder político concentrado em quem governa.", "todos os afetados por ela podem debater e chegar a um acordo com argumentos.", "resulta da vontade individual de cada participante.", "é aplicada por quem domina a técnica de convencer os outros."], "k": 2, "e": "Na ética do discurso, a validade de uma norma depende do assentimento de todos os afetados, participantes de um discurso prático. A proposta do grupo corresponde a esse procedimento."}, {"tema": "Habermas", "t": "Em duas equipes de uma fábrica, a primeira só recebe tarefas e é cobrada por resultados. A segunda se reúne para discutir como e por que organizar o trabalho.", "c": "Habermas distingue o paradigma da produção do paradigma da comunicação. A segunda equipe se aproxima:", "a": ["da interação mediada pela linguagem, em que o entendimento orienta a ação.", "da ação instrumental, que busca controlar a natureza e os resultados.", "do sistema, regulado apenas pelo dinheiro e pelo poder.", "da filosofia do sujeito, que parte de uma consciência isolada.", "do mundo da produção, em que a eficiência define o que é válido."], "k": 0, "e": "Habermas desloca o foco do trabalho (ação instrumental, paradigma da produção) para a interação linguística orientada ao entendimento (paradigma da comunicação), criticando a filosofia do sujeito. A primeira equipe ilustra a ação instrumental; a segunda, a comunicativa."}, {"tema": "Agamben", "t": "Em um campo de refugiados, as pessoas recebem comida e abrigo mínimos, mas não podem votar, trabalhar, circular nem ser ouvidas por nenhuma autoridade.", "c": "Para Giorgio Agamben, a situação mostra a distinção entre zoé e bíos, pois os refugiados:", "a": ["gozam de plena vida política, pois são protegidos pelo Estado.", "exercem soberania sobre o campo, onde decidem sobre a exceção.", "vivem a vida qualificada, própria dos cidadãos.", "perdem a vida biológica, mas conservam a cidadania.", "são mantidos vivos apenas biologicamente (zoé), sem existência política (bíos)."], "k": 4, "e": "Para Agamben, zoé é a vida biológica comum a todos os viventes e bíos, a vida politicamente qualificada. A vida nua é a zoé sem bíos, exposta ao poder soberano sem proteção política, como no campo descrito."}];
+const COLORS = ['--t0','--t1','--t2','--t3','--t4','--t5'];
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const cfgDefault = {n:4, names:['Equipe 1','Equipe 2','Equipe 3','Equipe 4','Equipe 5','Equipe 6'], time:60, steal:true, shuffle:false};
+let cfg = {...cfgDefault};
+try { const s = JSON.parse(localStorage.getItem('desafio-revisao-cfg')||'null'); if (s) cfg = {...cfgDefault, ...s}; } catch(e){}
+const saveCfg = () => { try { localStorage.setItem('desafio-revisao-cfg', JSON.stringify(cfg)); } catch(e){} };
+let S = null, timer = null;
+
+function shuffled(a){ a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+const dot = i => `<i style="background:var(${COLORS[i]})"></i>`;
+const fmt = s => cfg.time ? String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0') : '--:--';
+
+/* ---------- setup ---------- */
+function renderSetup(){
+  stopTimer();
+  const names = [...Array(cfg.n)].map((_,i)=>`<label>${dot(i)}<input id="nm${i}" value="${esc(cfg.names[i])}" maxlength="18" aria-label="Nome da equipe ${i+1}"></label>`).join('');
+  $('#app').innerHTML = `
+  <div class="setup">
+    <div class="hero">
+      <div class="eyebrow">Filosofia · 2º ano · 4º bimestre</div>
+      <h1>Desafio da Revisão</h1>
+      <p>Dez questões sobre a Escola de Frankfurt, Benjamin, Marcuse, Habermas e Agamben. Cada equipe responde na sua vez; errou, a próxima pode roubar os pontos.</p>
+    </div>
+    <div class="panel">
+      <div class="row"><span class="eyebrow">Equipes</span>
+        <div class="chips" id="chN">${[2,3,4,5,6].map(n=>`<button class="chip" data-n="${n}" aria-pressed="${cfg.n===n}">${n}</button>`).join('')}</div></div>
+      <div class="names">${names}</div>
+      <div class="row"><span class="eyebrow">Tempo por resposta</span>
+        <div class="chips" id="chT">${[[30,'30 s'],[60,'60 s'],[90,'90 s'],[0,'Sem limite']].map(([v,l])=>`<button class="chip" data-t="${v}" aria-pressed="${cfg.time===v}">${l}</button>`).join('')}</div></div>
+      <label class="sw"><input type="checkbox" id="steal" ${cfg.steal?'checked':''}> Rebote: se a equipe errar, a próxima pode roubar 5 pontos</label>
+      <label class="sw"><input type="checkbox" id="shuf" ${cfg.shuffle?'checked':''}> Embaralhar a ordem das questões</label>
+      <button class="go" id="go">Começar o desafio</button>
+    </div>
+  </div>
+  <div class="foot"><span>Acertou na vez: 10 pontos · Rebote: 5 pontos</span><span>Teclas: A–E escolhem · Enter confirma · Espaço avança · P pausa</span></div>`;
+  $('#chN').onclick = e => { const b=e.target.closest('[data-n]'); if(!b) return; readNames(); cfg.n=+b.dataset.n; renderSetup(); };
+  $('#chT').onclick = e => { const b=e.target.closest('[data-t]'); if(!b) return; readNames(); cfg.time=+b.dataset.t; renderSetup(); };
+  $('#go').onclick = () => { readNames(); cfg.steal=$('#steal').checked; cfg.shuffle=$('#shuf').checked; saveCfg(); newGame(); };
+}
+function readNames(){ for(let i=0;i<cfg.n;i++){ const v=($('#nm'+i)?.value||'').trim(); cfg.names[i]=v||('Equipe '+(i+1)); } cfg.steal=$('#steal')?.checked??cfg.steal; cfg.shuffle=$('#shuf')?.checked??cfg.shuffle; }
+
+/* ---------- game ---------- */
+function newGame(){
+  let order = Q.map((_,i)=>i); if (cfg.shuffle) order = shuffled(order);
+  S = { teams:[...Array(cfg.n)].map((_,i)=>({name:cfg.names[i],score:0})), order, i:0, q:null, phase:'answer', owner:0, cur:0, picked:null, elim:[], left:cfg.time, paused:false, gain:null, note:'' };
+  startQuestion();
+}
+function prep(q){ return { tema:q.tema, t:q.t, c:q.c, e:q.e, alts:q.a.slice(), k:q.k }; }
+function startQuestion(){
+  S.q = prep(Q[S.order[S.i]]);
+  S.owner = S.i % S.teams.length; S.cur = S.owner; S.phase='answer'; S.picked=null; S.elim=[]; S.gain=null; S.note=''; S.paused=false;
+  S.left = cfg.time; startTimer(); renderRound();
+}
+function startTimer(){
+  stopTimer(); if(!cfg.time) return;
+  timer = setInterval(()=>{ if(S.paused) return; S.left--; if(S.left<=0){ S.left=0; stopTimer(); lock(true); return; } paintTimer(); }, 1000);
+}
+function stopTimer(){ if(timer){ clearInterval(timer); timer=null; } }
+function paintTimer(){
+  const f=$('.fill'), b=$('#tm'); if(!f||!b) return;
+  f.style.width = cfg.time ? (S.left/cfg.time*100)+'%' : '100%'; f.classList.toggle('low', cfg.time>0 && S.left<=10); b.textContent=fmt(S.left);
+}
+function scoreboard(bump){
+  return `<div class="score">${S.teams.map((t,i)=>`<div class="team ${S.phase!=='reveal'&&i===S.cur?'on':''} ${bump===i?'bump':''}">${dot(i)}<span>${esc(t.name)}</span><b>${t.score}</b></div>`).join('')}</div>`;
+}
+function renderRound(bump){
+  const q=S.q, rev=S.phase==='reveal', locked=rev;
+  const alts = q.alts.map((a,i)=>{
+    let cls='alt'; if(rev){ if(i===q.k) cls+=' right'; else if(i===S.picked) cls+=' wrong'; }
+    else { if(S.elim.includes(i)) cls+=' out'; else if(i===S.picked) cls+=' sel'; }
+    return `<button class="${cls}" data-i="${i}" ${locked||S.elim.includes(i)?'disabled':''}><span class="L">${'ABCDE'[i]}</span><span>${esc(a)}</span></button>`;
+  }).join('');
+  const t = S.teams[S.cur];
+  let side='';
+  if(rev){
+    const ok = S.gain && S.gain.ok;
+    side = `<div class="verdict ${ok?'ok':'no'}"><h3>${ok?`${esc(S.teams[S.gain.team].name)} ganhou ${S.gain.pts} pontos`:'Ninguém pontuou nesta rodada'}</h3><p>${esc(q.e)}</p></div>
+      <div class="actions"><button class="go" id="next">${S.i===S.order.length-1?'Ver resultado':'Próxima questão'}</button><span class="hint">Espaço ou Enter</span></div>`;
+  } else {
+    side = `${S.note?`<div class="notice">${esc(S.note)}</div>`:''}
+      <div class="actions"><button class="go" id="lock" ${S.picked===null?'disabled style="opacity:.45;cursor:not-allowed"':''}>Travar resposta</button>
+      <button class="ghost" id="pause">${S.paused?'Retomar':'Pausar'}</button><span class="hint">A–E escolhe · Enter trava</span></div>`;
+  }
+  $('#app').innerHTML = `
+  <div class="bar"><div class="brand"><span class="eyebrow">Desafio da Revisão</span><b>Questão ${S.i+1} de ${S.order.length} · ${esc(q.tema)}</b></div>${scoreboard(bump)}</div>
+  <div class="meta">
+    <div class="turn">${dot(S.cur)}${rev?'Resultado':esc(t.name)}<span class="tag ${S.phase==='steal'?'steal':''}">${rev?'Revelação':S.phase==='steal'?'Rebote · 5 pontos':'Na vez · 10 pontos'}</span></div>
+    ${cfg.time?`<div class="timer"><div class="track"><div class="fill" style="width:${S.left/cfg.time*100}%"></div></div><b id="tm">${fmt(S.left)}</b></div>`:''}
+  </div>
+  <div class="stage">
+    <div class="card"><div class="eyebrow">Situação</div><p class="base">${esc(q.t)}</p><p class="cmd">${esc(q.c)}</p><p class="src">Situação hipotética elaborada para a revisão.</p></div>
+    <div style="display:flex;flex-direction:column;gap:1rem"><div class="alts" id="alts">${alts}</div>${side}</div>
+  </div>
+  <div class="foot"><button class="ghost" id="quit">Encerrar jogo</button><span>${rev?'':'A equipe da vez escolhe; o professor clica ou digita a letra.'}</span></div>`;
+  $('#alts').onclick = e => { const b=e.target.closest('.alt'); if(!b||b.disabled) return; pick(+b.dataset.i); };
+  const l=$('#lock'); if(l) l.onclick = () => lock(false);
+  const p=$('#pause'); if(p) p.onclick = togglePause;
+  const n=$('#next'); if(n) n.onclick = next;
+  $('#quit').onclick = () => finish();
+}
+function pick(i){ if(S.phase==='reveal'||S.elim.includes(i)) return; S.picked=i; renderRound(); }
+function togglePause(){ S.paused=!S.paused; renderRound(); }
+function lock(timeout){
+  if(S.phase==='reveal') return;
+  if(!timeout && S.picked===null) return;
+  stopTimer();
+  const q=S.q, ok = !timeout && S.picked===q.k;
+  if(ok){ const pts = S.phase==='answer'?10:5; S.teams[S.cur].score+=pts; S.gain={ok:true,team:S.cur,pts}; S.phase='reveal'; renderRound(S.cur); return; }
+  if(S.phase==='answer' && cfg.steal && S.teams.length>1){
+    if(!timeout) S.elim.push(S.picked);
+    const prev=S.cur; S.cur=(S.cur+1)%S.teams.length; S.phase='steal'; S.picked=null;
+    S.note = (timeout?'Tempo esgotado. ':'Resposta incorreta. ')+S.teams[S.cur].name+' pode roubar os pontos. A alternativa já eliminada está riscada.';
+    S.left = cfg.time ? Math.min(cfg.time,30) : 0; startTimer(); renderRound(); return;
+  }
+  S.gain={ok:false}; S.phase='reveal'; renderRound();
+}
+function next(){ if(S.i>=S.order.length-1){ finish(); return; } S.i++; startQuestion(); }
+
+/* ---------- final ---------- */
+function finish(){
+  stopTimer();
+  const r = S.teams.map((t,i)=>({...t,i})).sort((a,b)=>b.score-a.score);
+  const top = r[0].score, winners = r.filter(t=>t.score===top);
+  const head = top===0 ? 'Ninguém pontuou' : winners.length>1 ? 'Empate no topo' : esc(winners[0].name)+' venceu';
+  const sub = top===0 ? 'Vale refazer a rodada com o caderno aberto.' : winners.length>1 ? winners.map(w=>esc(w.name)).join(' e ')+' terminaram com '+top+' pontos.' : 'Com '+top+' pontos em '+(S.i+(S.phase==='reveal'?1:0))+' questões.';
+  let pos=0, last=null;
+  const rows = r.map((t,k)=>{ if(t.score!==last){ pos=k+1; last=t.score; } return `<div class="rk ${pos===1&&top>0?'first':''}"><span class="n">${pos}º</span><span class="nm">${dot(t.i)}<span>${esc(t.name)}</span></span><span class="pt">${t.score}</span></div>`; }).join('');
+  $('#app').innerHTML = `<div class="bar"><div class="brand"><span class="eyebrow">Desafio da Revisão</span><b>Resultado final</b></div></div>
+   <div class="final"><div><h1>${head}</h1><p class="hero" style="color:var(--muted);margin:.6rem 0 0;font-size:1.2rem">${sub}</p></div>
+   <div class="rank">${rows}</div>
+   <div class="actions"><button class="go" id="again">Jogar de novo</button><button class="ghost" id="setup">Mudar equipes</button></div></div>
+   <div class="foot"><span>Escola de Frankfurt · Benjamin · Marcuse · Habermas · Agamben</span></div>`;
+  S.phase='final';
+  $('#again').onclick = newGame; $('#setup').onclick = renderSetup;
+}
+
+/* ---------- teclado ---------- */
+document.addEventListener('keydown', e=>{
+  if(!S || e.target.matches('input')||e.ctrlKey||e.metaKey||e.altKey) return;
+  const k=e.key.toLowerCase();
+  if(e.target.closest&&e.target.closest('button')&&(k===' '||k==='enter')) return;
+  if(S.phase==='final') return;
+  if(S.phase==='reveal'){ if(k===' '||k==='enter'){ e.preventDefault(); next(); } return; }
+  if('abcde'.includes(k)&&k.length===1){ pick('abcde'.indexOf(k)); }
+  else if(k==='enter'){ e.preventDefault(); lock(false); }
+  else if(k==='p'){ togglePause(); }
+});
+renderSetup();
+</script>
+
+</body></html>
